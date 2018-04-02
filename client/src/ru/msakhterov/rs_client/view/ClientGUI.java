@@ -1,27 +1,25 @@
 package ru.msakhterov.rs_client.view;
 
-import ru.msakhterov.rs_common.Requests;
-import ru.msakhterov.rs_common.SocketThread;
-import ru.msakhterov.rs_common.SocketThreadListener;
+import ru.msakhterov.rs_client.controller.ClientController;
+import ru.msakhterov.rs_client.controller.ClientListener;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.net.Socket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler,
-        ActionListener, SocketThreadListener {
-
+        ActionListener, ClientView {
 
     private static final int WIDTH = 400;
     private static final int HEIGHT = 400;
+
     private static final String WINDOW_TITLE = "Storage Client";
+
     private final JTextArea log = new JTextArea();
-    private final JPanel panel = new JPanel(new GridLayout(9, 1));
+    private final JPanel panel = new JPanel(new GridLayout(8, 1));
     private final JTextField tfIPAddress = new JTextField("192.168.31.230");
     private final JTextField tfPort = new JTextField("8190");
     private final JTextField tfEmail = new JTextField("test1@test.ru");
@@ -32,8 +30,9 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private final JButton btnReg = new JButton("Registration");
     private final JButton btnDisconnect = new JButton("Disconnect");
     private final DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss: ");
+
     private int btn = 0;
-    private SocketThread socketThread;
+    private ClientListener controller;
 
     public ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -61,15 +60,17 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         panel.add(tfEmail);
         panel.add(btnLogin);
         panel.add(btnReg);
-        panel.add(btnDisconnect);
-        btnDisconnect.setVisible(false);
         add(panel, BorderLayout.EAST);
 
+
+        log.setRows(5);
         log.setEditable(false);
         log.setLineWrap(true);
         JScrollPane scrollLog = new JScrollPane(log);
         add(scrollLog, BorderLayout.CENTER);
 
+        controller = new ClientController(this);
+        setResizable(false);
         setVisible(true);
     }
 
@@ -79,13 +80,11 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         if (src == cbAlwaysOnTop) {
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
         } else if (src == btnLogin) {
-            btn = 1;
-            connect();
+            controller.onLogin();
         } else if (src == btnReg) {
-            btn = 2;
-            connect();
+            controller.onRegistration();
         } else if (src == btnDisconnect) {
-            socketThread.close();
+            controller.onDisconect();
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
@@ -108,87 +107,74 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         System.exit(1);
     }
 
-    private void connect() {
-        Socket socket = null;
-        try {
-            socket = new Socket(tfIPAddress.getText(),
-                    Integer.parseInt(tfPort.getText()));
-        } catch (IOException e) {
-            log.append("Exception: " + e.getMessage());
-        }
-        socketThread = new SocketThread(this, "SocketThread", socket);
+
+    @Override
+    public String getIP() {
+        return tfIPAddress.getText();
     }
 
-    private void putLog(String message) {
-        log.append(message + "\n");
+    @Override
+    public int getPort() {
+        return Integer.parseInt(tfPort.getText());
+    }
+
+    @Override
+    public String getLogin() {
+        return tfLogin.getText();
+    }
+
+    @Override
+    public String getPassword() {
+        return new String(tfPassword.getPassword());
+    }
+
+    @Override
+    public String getEmail() {
+        return tfEmail.getText();
+    }
+
+    @Override
+    public void logAppend(String msg) {
+        log.append(msg + "\n");
         log.setCaretPosition(log.getDocument().getLength());
     }
 
-    void handleMessage(String value) {
-        String[] arr = value.split(Requests.DELIMITER);
-        String msgType = arr[0];
-        switch (msgType) {
-            case Requests.AUTH_ACCEPT:
-                setTitle(WINDOW_TITLE + ": " + arr[1]);
+    @Override
+    public void setView(ViewStatement statement) {
+        switch (statement) {
+            case CONNECTED:
+                panel.remove(tfIPAddress);
+                panel.remove(tfPort);
+                panel.remove(tfLogin);
+                panel.remove(tfPassword);
+                panel.remove(tfEmail);
+                panel.remove(btnLogin);
+                panel.remove(btnReg);
+                panel.add(btnDisconnect);
+                panel.revalidate();
+                repaint();
                 break;
-            case Requests.AUTH_DENIED:
-                putLog(value);
-                break;
-            case Requests.REG_ACCEPT:
-                setTitle(WINDOW_TITLE + ": " + arr[1]);
-                break;
-            case Requests.REG_DENIED:
-                putLog(value);
-                break;
-            case Requests.REQUEST_FORMAT_ERROR:
-                putLog(value);
-                socketThread.close();
-                break;
+            case DISCONNECTED:
+                panel.remove(btnDisconnect);
+                panel.add(tfIPAddress);
+                panel.add(tfPort);
+                panel.add(tfLogin);
+                panel.add(tfPassword);
+                panel.add(tfEmail);
+                panel.add(btnLogin);
+                panel.add(btnReg);
+                panel.revalidate();
+                add(panel, BorderLayout.WEST);
+                repaint();
+
             default:
-                throw new RuntimeException("Unknown message format: " + value);
+                break;
         }
     }
 
     @Override
-    public void onStartSocketThread(SocketThread thread, Socket socket) {
-        putLog("Поток сокета стартовал");
-    }
-
-    @Override
-    public void onStopSocketThread(SocketThread thread) {
-        putLog("Соединение разорвано");
-        setTitle(WINDOW_TITLE);
-        panel.setVisible(true);
-    }
-
-    @Override
-    public void onSocketIsReady(SocketThread thread, Socket socket) {
-        putLog("Соединение установлено");
-        String login = tfLogin.getText();
-        String password = new String(tfPassword.getPassword());
-        String email = tfEmail.getText();
-        if (btn == 1) {
-            thread.sendRequest(Requests.getAuthRequest(login, password));
-        } else {
-            thread.sendRequest(Requests.getRegRequest(login, password, email));
-        }
-        btnReg.setVisible(false);
-        btnLogin.setVisible(false);
-        btnDisconnect.setVisible(true);
-    }
-
-    @Override
-    public void onReceiveRequest(SocketThread thread, Socket socket, String value) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                handleMessage(value);
-            }
-        });
-    }
-
-    @Override
-    public void onSocketThreadException(SocketThread thread, Exception e) {
-
+    public void setViewTitle(String title) {
+        if (title != null) setTitle(WINDOW_TITLE + ": " + title);
+        else setTitle(WINDOW_TITLE);
     }
 }
