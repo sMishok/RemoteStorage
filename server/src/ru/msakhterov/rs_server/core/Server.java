@@ -14,6 +14,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Vector;
 
+import static ru.msakhterov.rs_common.Logger.putLog;
+
 public class Server implements ServerSocketThreadListener, SocketThreadListener {
     private final DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss: ");
     ServerSocketThread serverSocketThread;
@@ -37,10 +39,10 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
         }
     }
 
-    void putLog(String msg) {
-        msg = dateFormat.format(System.currentTimeMillis()) + Thread.currentThread().getName() + ": " + msg;
-        System.out.println(msg);
-    }
+//    void putLog(String msg) {
+//        msg = dateFormat.format(System.currentTimeMillis()) + Thread.currentThread().getName() + ": " + msg;
+//        System.out.println(msg);
+//    }
 
     @Override
     public void onStartServerSocketThread(ServerSocketThread thread) {
@@ -75,19 +77,19 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
 
     @Override
     public synchronized void onStartSocketThread(SocketThread thread, Socket socket) {
-        putLog("started");
+        putLog("SocketThread запущен");
     }
 
     @Override
     public synchronized void onStopSocketThread(SocketThread thread) {
-        putLog("stopped");
+        putLog("SocketThread остановлен");
         ClientThread client = (ClientThread) thread;
         clients.remove(thread);
     }
 
     @Override
     public synchronized void onSocketIsReady(SocketThread thread, Socket socket) {
-        putLog("is ready");
+        putLog("SocketThread готов к передаче данных");
         clients.add(thread);
     }
 

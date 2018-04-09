@@ -29,9 +29,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private final JButton btnLogin = new JButton("Login");
     private final JButton btnReg = new JButton("Registration");
     private final JButton btnDisconnect = new JButton("Disconnect");
-    private final DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss: ");
+    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss - ");
 
-    private int btn = 0;
     private ClientListener controller;
 
     public ClientGUI() {
@@ -135,6 +134,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     @Override
     public void logAppend(String msg) {
+        msg = dateFormat.format(System.currentTimeMillis()) + ": " + msg;
         log.append(msg + "\n");
         log.setCaretPosition(log.getDocument().getLength());
     }
