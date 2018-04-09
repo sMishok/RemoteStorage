@@ -6,7 +6,11 @@ public interface ClientListener {
 
     public void onRegistration();
 
-    public void onDisconect();
+    public void onDisconnect();
+
+    public void onUpload();
+
+    public void onDownload();
 
 
 }

@@ -10,15 +10,12 @@ import ru.msakhterov.rs_server.network.ServerSocketThreadListener;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Vector;
 
 import static ru.msakhterov.rs_common.Logger.putLog;
 
 public class Server implements ServerSocketThreadListener, SocketThreadListener {
-    private final DateFormat dateFormat = new SimpleDateFormat("hh:mm:ss: ");
-    ServerSocketThread serverSocketThread;
+    private ServerSocketThread serverSocketThread;
     private Vector<SocketThread> clients = new Vector<>();
 
     public void start(int port) {
@@ -38,11 +35,6 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
             SqlClient.disconnect();
         }
     }
-
-//    void putLog(String msg) {
-//        msg = dateFormat.format(System.currentTimeMillis()) + Thread.currentThread().getName() + ": " + msg;
-//        System.out.println(msg);
-//    }
 
     @Override
     public void onStartServerSocketThread(ServerSocketThread thread) {
@@ -77,29 +69,29 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
 
     @Override
     public synchronized void onStartSocketThread(SocketThread thread, Socket socket) {
-        putLog("SocketThread запущен");
+        putLog("запущен");
     }
 
     @Override
     public synchronized void onStopSocketThread(SocketThread thread) {
-        putLog("SocketThread остановлен");
+        putLog("остановлен");
         ClientThread client = (ClientThread) thread;
         clients.remove(thread);
     }
 
     @Override
     public synchronized void onSocketIsReady(SocketThread thread, Socket socket) {
-        putLog("SocketThread готов к передаче данных");
+        putLog("готов к передаче данных");
         clients.add(thread);
     }
 
     @Override
-    public synchronized void onReceiveRequest(SocketThread thread, Socket socket, String value) {
+    public synchronized void onReceiveRequest(SocketThread thread, Socket socket, Object request) {
         ClientThread client = (ClientThread) thread;
         if (client.isAuthorized()) {
-            handleAuthRequest(client, value);
+            handleAuthRequest(client, request);
         } else {
-            handleNonAuthRequest(client, value);
+            handleNonAuthRequest(client, request);
         }
     }
 
@@ -118,58 +110,67 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
         return null;
     }
 
-    private void handleAuthRequest(ClientThread client, String value) {
-        String[] arr = value.split(Requests.DELIMITER);
-        String msgType = arr[0];
-        switch (msgType) {
-            case Requests.TYPE_REQUEST:
-                break;
-            default:
-                client.requestFormatError(value);
+    private void handleAuthRequest(ClientThread client, Object request) {
+        if (request instanceof Object[]) {
+            Object[] requestArr = (Object[]) request;
+            String requestTitle = (String) requestArr[0];
+            String[] arr = requestTitle.split(Requests.DELIMITER);
+            String msgType = arr[0];
+            switch (msgType) {
+                case Requests.TYPE_REQUEST:
+                    break;
+                default:
+                    client.requestFormatError(requestTitle);
+            }
         }
     }
 
-    private void handleNonAuthRequest(ClientThread newClient, String value) {
-        String[] arr = value.split(Requests.DELIMITER);
-        if (arr.length < 3) {
-            newClient.requestFormatError(value);
-            return;
-        }
-        String login;
-        String password;
-        String email;
-        String user;
-        switch (arr[0]) {
-            case Requests.AUTH_REQUEST:
-                login = arr[1];
-                password = arr[2];
-                user = SqlClient.checkAuth(login, password);
-                System.out.println("!!!Авторизация логин: " + user);
-                if (user == null) {
-                    putLog("Invalid login/password: login '" +
-                            login + "' password: '" + password + "'");
-                    newClient.authorizeError();
-                    return;
-                }
-                newClient.authorizeAccept(user);
-                break;
-            case Requests.REG_REQUEST:
-                login = arr[1];
-                password = arr[2];
-                email = arr[3];
-                user = SqlClient.makeReg(login, password, email);
-                System.out.println("!!!Регистрация логин: " + user);
-                if (user == null) {
-                    putLog("Invalid login/password: login '" +
-                            login + "' password: '" + password + "'");
-                    newClient.regError();
-                    return;
-                }
-                newClient.authorizeAccept(user);
-                break;
-            default:
-                newClient.requestFormatError(value);
-                break;
+    private void handleNonAuthRequest(ClientThread newClient, Object request) {
+        if (request instanceof Object[]) {
+            Object[] requestArr = (Object[]) request;
+            String requestTitle = (String) requestArr[0];
+            String[] arr = requestTitle.split(Requests.DELIMITER);
+
+            if (arr.length < 3) {
+                newClient.requestFormatError(requestTitle);
+                return;
+            }
+            String login;
+            String password;
+            String email;
+            String user;
+            switch (arr[0]) {
+                case Requests.AUTH_REQUEST:
+                    login = arr[1];
+                    password = arr[2];
+                    user = SqlClient.checkAuth(login, password);
+                    System.out.println("!!!Авторизация логин: " + user);
+                    if (user == null) {
+                        putLog("Invalid login/password: login '" +
+                                login + "' password: '" + password + "'");
+                        newClient.authorizeError();
+                        return;
+                    }
+                    newClient.authorizeAccept(user);
+                    break;
+                case Requests.REG_REQUEST:
+                    login = arr[1];
+                    password = arr[2];
+                    email = arr[3];
+                    user = SqlClient.makeReg(login, password, email);
+                    System.out.println("!!!Регистрация логин: " + user);
+                    if (user == null) {
+                        putLog("Invalid login/password: login '" +
+                                login + "' password: '" + password + "'");
+                        newClient.regError();
+                        return;
+                    }
+                    newClient.authorizeAccept(user);
+                    break;
+                default:
+                    newClient.requestFormatError(requestTitle);
+                    break;
+            }
         }
     }
 }

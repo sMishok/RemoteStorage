@@ -33,7 +33,15 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     @Override
-    public void onDisconect() {
+    public void onDisconnect() {
+        socketThread.close();
+    }
+
+    public void onUpload() {
+        socketThread.close();
+    }
+
+    public void onDownload() {
         socketThread.close();
     }
 
@@ -47,29 +55,32 @@ public class ClientController implements ClientListener, SocketThreadListener {
         socketThread = new SocketThread(this, "SocketThread", socket);
     }
 
-
-    void handleMessage(String value) {
-        String[] arr = value.split(Requests.DELIMITER);
-        String msgType = arr[0];
-        switch (msgType) {
-            case Requests.AUTH_ACCEPT:
-                client.setViewTitle(arr[1]);
-                break;
-            case Requests.AUTH_DENIED:
-                client.logAppend(value);
-                break;
-            case Requests.REG_ACCEPT:
-                client.setViewTitle(arr[1]);
-                break;
-            case Requests.REG_DENIED:
-                client.logAppend(value);
-                break;
-            case Requests.REQUEST_FORMAT_ERROR:
-                client.logAppend(value);
-                socketThread.close();
-                break;
-            default:
-                throw new RuntimeException("Unknown message format: " + value);
+    private void handleRequest(Object request) {
+        if (request instanceof Object[]) {
+            Object[] requestArr = (Object[]) request;
+            String requestTitle = (String) requestArr[0];
+            String[] arr = requestTitle.split(Requests.DELIMITER);
+            String msgType = arr[0];
+            switch (msgType) {
+                case Requests.AUTH_ACCEPT:
+                    client.setViewTitle(arr[1]);
+                    break;
+                case Requests.AUTH_DENIED:
+                    client.logAppend(requestTitle);
+                    break;
+                case Requests.REG_ACCEPT:
+                    client.setViewTitle(arr[1]);
+                    break;
+                case Requests.REG_DENIED:
+                    client.logAppend(requestTitle);
+                    break;
+                case Requests.REQUEST_FORMAT_ERROR:
+                    client.logAppend(requestTitle);
+                    socketThread.close();
+                    break;
+                default:
+                    throw new RuntimeException("Unknown message format: " + requestTitle);
+            }
         }
     }
 
@@ -101,17 +112,17 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     @Override
-    public void onReceiveRequest(SocketThread thread, Socket socket, String value) {
+    public void onReceiveRequest(SocketThread thread, Socket socket, Object request) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                handleMessage(value);
+                handleRequest(request);
             }
         });
     }
 
     @Override
     public void onSocketThreadException(SocketThread thread, Exception e) {
-
+        client.logAppend(e.toString());
     }
 }

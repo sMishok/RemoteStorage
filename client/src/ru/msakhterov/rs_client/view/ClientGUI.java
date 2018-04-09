@@ -29,8 +29,10 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private final JButton btnLogin = new JButton("Login");
     private final JButton btnReg = new JButton("Registration");
     private final JButton btnDisconnect = new JButton("Disconnect");
-    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss - ");
+    private final JButton btnUpload = new JButton("Upload");
+    private final JButton btnDownload = new JButton("Download");
 
+    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     private ClientListener controller;
 
     public ClientGUI() {
@@ -50,6 +52,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         btnLogin.addActionListener(this);
         btnReg.addActionListener(this);
         btnDisconnect.addActionListener(this);
+        btnUpload.addActionListener(this);
+        btnDownload.addActionListener(this);
 
         panel.add(cbAlwaysOnTop);
         panel.add(tfIPAddress);
@@ -83,7 +87,11 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         } else if (src == btnReg) {
             controller.onRegistration();
         } else if (src == btnDisconnect) {
-            controller.onDisconect();
+            controller.onDisconnect();
+        } else if (src == btnUpload) {
+            controller.onUpload();
+        } else if (src == btnDownload) {
+            controller.onDownload();
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
@@ -151,11 +159,15 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 panel.remove(btnLogin);
                 panel.remove(btnReg);
                 panel.add(btnDisconnect);
+                panel.add(btnUpload);
+                panel.add(btnDownload);
                 panel.revalidate();
                 repaint();
                 break;
             case DISCONNECTED:
                 panel.remove(btnDisconnect);
+                panel.remove(btnUpload);
+                panel.remove(btnDownload);
                 panel.add(tfIPAddress);
                 panel.add(tfPort);
                 panel.add(tfLogin);

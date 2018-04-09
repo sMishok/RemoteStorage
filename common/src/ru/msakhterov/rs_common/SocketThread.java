@@ -1,15 +1,15 @@
 package ru.msakhterov.rs_common;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class SocketThread extends Thread {
 
     private SocketThreadListener listener;
     private Socket socket;
-    private DataOutputStream out;
+    private ObjectOutputStream out;
 
     public SocketThread(SocketThreadListener listener, String name, Socket socket) {
         super(name);
@@ -22,14 +22,21 @@ public class SocketThread extends Thread {
     public void run() {
         try {
             listener.onStartSocketThread(this, socket);
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
+            out = new ObjectOutputStream(socket.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
             listener.onSocketIsReady(this, socket);
+            Object request = null;
             while (!isInterrupted()) {
-                String msg = in.readUTF();
-                listener.onReceiveRequest(this, socket, msg);
+                try {
+                    request = in.readObject();
+                } catch (ClassNotFoundException e) {
+                    listener.onSocketThreadException(this, e);
+                }
+                if (request != null) listener.onReceiveRequest(this, socket, request);
             }
         } catch (IOException e) {
+            listener.onSocketThreadException(this, e);
+        } catch (Exception e) {
             listener.onSocketThreadException(this, e);
         } finally {
             try {
@@ -42,8 +49,10 @@ public class SocketThread extends Thread {
     }
 
     public synchronized boolean sendRequest(String message) {
+        Object[] requestArr = new Object[2];
+        requestArr[0] = (Object) message;
         try {
-            out.writeUTF(message);
+            out.writeObject(requestArr);
             out.flush();
             return true;
         } catch (IOException e) {

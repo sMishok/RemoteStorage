@@ -10,7 +10,7 @@ public interface SocketThreadListener {
 
     void onSocketIsReady(SocketThread thread, Socket socket);
 
-    void onReceiveRequest(SocketThread thread, Socket socket, String value);
+    void onReceiveRequest(SocketThread thread, Socket socket, Object request);
 
     void onSocketThreadException(SocketThread thread, Exception e);
 
