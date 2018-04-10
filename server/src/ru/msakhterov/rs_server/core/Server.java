@@ -8,6 +8,9 @@ import ru.msakhterov.rs_server.network.ClientThread;
 import ru.msakhterov.rs_server.network.ServerSocketThread;
 import ru.msakhterov.rs_server.network.ServerSocketThreadListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -117,6 +120,16 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
             String[] arr = requestTitle.split(Requests.DELIMITER);
             String msgType = arr[0];
             switch (msgType) {
+                case Requests.UPLOAD_REQUEST:
+//                    File newFile = new File(".\\Files\\"+client.getUser()+"\\" + arr[1]);
+//                    try(FileOutputStream fos = new FileOutputStream(newFile)){
+//                        byte[] buffer = (byte[])requestArr[1];
+//                        fos.write(buffer, 0, buffer.length);
+//                    } catch (IOException e){
+//                        putLog("Exception: " + e.getMessage());
+//                    }
+                    break;
+
                 case Requests.TYPE_REQUEST:
                     break;
                 default:

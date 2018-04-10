@@ -36,8 +36,6 @@ public class SocketThread extends Thread {
             }
         } catch (IOException e) {
             listener.onSocketThreadException(this, e);
-        } catch (Exception e) {
-            listener.onSocketThreadException(this, e);
         } finally {
             try {
                 socket.close();
@@ -50,9 +48,22 @@ public class SocketThread extends Thread {
 
     public synchronized boolean sendRequest(String message) {
         Object[] requestArr = new Object[2];
-        requestArr[0] = (Object) message;
+        requestArr[0] = message;
         try {
             out.writeObject(requestArr);
+            out.flush();
+            return true;
+        } catch (IOException e) {
+            listener.onSocketThreadException(this, e);
+            close();
+            return false;
+        }
+    }
+
+    public synchronized boolean sendRequest(Object request) {
+
+        try {
+            out.writeObject(request);
             out.flush();
             return true;
         } catch (IOException e) {

@@ -2,6 +2,7 @@ package ru.msakhterov.rs_client.controller;
 
 import ru.msakhterov.rs_client.view.ClientView;
 import ru.msakhterov.rs_client.view.ViewStatement;
+import ru.msakhterov.rs_common.RequestMaker;
 import ru.msakhterov.rs_common.Requests;
 import ru.msakhterov.rs_common.SocketThread;
 import ru.msakhterov.rs_common.SocketThreadListener;
@@ -141,6 +142,8 @@ public class ClientController implements ClientListener, SocketThreadListener {
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer, 0, fis.available());
+            Object request = RequestMaker.makeRequest(Requests.getUploadRequest(file.getName()), buffer);
+            socketThread.sendRequest(request);
 
             //Test
             System.out.println("Содержимое файла:");
