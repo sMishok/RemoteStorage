@@ -45,7 +45,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
         fileChooser.setDialogTitle("Выбор файла");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int result = fileChooser.showOpenDialog((Component)client);
-        if (result == JFileChooser.APPROVE_OPTION ){
+        if (result == JFileChooser.APPROVE_OPTION){
             File selectedFile = fileChooser.getSelectedFile();
             if (selectedFile != null){
                 loadFile(selectedFile);
@@ -54,7 +54,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     public void onDownload() {
-        socketThread.close();
+
     }
 
     private void connect() {
@@ -120,7 +120,6 @@ public class ClientController implements ClientListener, SocketThreadListener {
             thread.sendRequest(Requests.getRegRequest(login, password, email));
         }
         client.setView(ViewStatement.CONNECTED);
-
     }
 
     @Override
