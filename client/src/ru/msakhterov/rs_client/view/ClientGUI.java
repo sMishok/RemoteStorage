@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -15,12 +16,13 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     private static final int WIDTH = 400;
     private static final int HEIGHT = 400;
+//    "192.168.31.230"
 
     private static final String WINDOW_TITLE = "Storage Client";
 
     private final JTextArea log = new JTextArea();
     private final JPanel panel = new JPanel(new GridLayout(8, 1));
-    private final JTextField tfIPAddress = new JTextField("192.168.31.230");
+    private final JTextField tfIPAddress = new JTextField("localhost");
     private final JTextField tfPort = new JTextField("8190");
     private final JTextField tfEmail = new JTextField("test1@test.ru");
     private final JCheckBox cbAlwaysOnTop = new JCheckBox("Always on top");

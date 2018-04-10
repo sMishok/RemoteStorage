@@ -7,6 +7,9 @@ import ru.msakhterov.rs_common.SocketThread;
 import ru.msakhterov.rs_common.SocketThreadListener;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -38,7 +41,16 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     public void onUpload() {
-        socketThread.close();
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Выбор файла");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int result = fileChooser.showOpenDialog((Component)client);
+        if (result == JFileChooser.APPROVE_OPTION ){
+            File selectedFile = fileChooser.getSelectedFile();
+            if (selectedFile != null){
+                loadFile(selectedFile);
+            }
+        }
     }
 
     public void onDownload() {
@@ -125,4 +137,21 @@ public class ClientController implements ClientListener, SocketThreadListener {
     public void onSocketThreadException(SocketThread thread, Exception e) {
         client.logAppend(e.toString());
     }
+
+    private void loadFile(File file){
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer, 0, fis.available());
+
+            //Test
+            System.out.println("Содержимое файла:");
+            for (int i = 0; i < buffer.length; i++) {
+                System.out.print((char) buffer[i]);
+            }
+        } catch (IOException e) {
+            client.logAppend("File load exception: " + e.getMessage());
+        }
+    }
 }
+
+
