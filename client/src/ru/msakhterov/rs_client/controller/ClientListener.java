@@ -2,15 +2,15 @@ package ru.msakhterov.rs_client.controller;
 
 public interface ClientListener {
 
-    public void onLogin();
+    void onLogin();
 
-    public void onRegistration();
+    void onRegistration();
 
-    public void onDisconnect();
+    void onDisconnect();
 
-    public void onUpload();
+    void onUpload();
 
-    public void onDownload();
+    void onDownload();
 
 
 }

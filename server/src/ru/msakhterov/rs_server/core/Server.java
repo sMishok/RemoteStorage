@@ -23,7 +23,7 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
 
     public void start(int port) {
         if (serverSocketThread != null && serverSocketThread.isAlive()) {
-            putLog("Server is already running");
+            putLog("Сервер уже запущен");
         } else {
             serverSocketThread = new ServerSocketThread(this, "Server thread", port, 2000);
             SqlClient.connect();
@@ -32,12 +32,20 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
 
     public void stop() {
         if (serverSocketThread == null || !serverSocketThread.isAlive()) {
-            putLog("Server is not running");
+            putLog("Сервер не запущен");
         } else {
             serverSocketThread.interrupt();
             SqlClient.disconnect();
         }
     }
+
+    public void showUsersData () {
+            SqlClient.connect();
+            String userData = SqlClient.showAllUsers();
+            if (!userData.equals(null)) putLog(userData);
+            else putLog("База данных не сожержит пользовательских данных");
+    }
+
 
     @Override
     public void onStartServerSocketThread(ServerSocketThread thread) {
@@ -121,13 +129,14 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
             String msgType = arr[0];
             switch (msgType) {
                 case Requests.UPLOAD_REQUEST:
-//                    File newFile = new File(".\\Files\\"+client.getUser()+"\\" + arr[1]);
-//                    try(FileOutputStream fos = new FileOutputStream(newFile)){
-//                        byte[] buffer = (byte[])requestArr[1];
-//                        fos.write(buffer, 0, buffer.length);
-//                    } catch (IOException e){
-//                        putLog("Exception: " + e.getMessage());
-//                    }
+                    File newFile = new File (client.getUserDir(), arr[1]);
+                    try(FileOutputStream fos = new FileOutputStream(newFile)){
+                        byte[] buffer = (byte[])requestArr[1];
+                        fos.write(buffer, 0, buffer.length);
+                        putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
+                    } catch (IOException e){
+                        putLog("Exception: " + e.getMessage());
+                    }
                     break;
 
                 case Requests.TYPE_REQUEST:
@@ -157,9 +166,8 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
                     login = arr[1];
                     password = arr[2];
                     user = SqlClient.checkAuth(login, password);
-                    System.out.println("!!!Авторизация логин: " + user);
                     if (user == null) {
-                        putLog("Invalid login/password: login '" +
+                        putLog("Некорректные login/password: login '" +
                                 login + "' password: '" + password + "'");
                         newClient.authorizeError();
                         return;
@@ -171,10 +179,8 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
                     password = arr[2];
                     email = arr[3];
                     user = SqlClient.makeReg(login, password, email);
-                    System.out.println("!!!Регистрация логин: " + user);
                     if (user == null) {
-                        putLog("Invalid login/password: login '" +
-                                login + "' password: '" + password + "'");
+                        putLog("Email: " + email + "уже зарегистрирован");
                         newClient.regError();
                         return;
                     }

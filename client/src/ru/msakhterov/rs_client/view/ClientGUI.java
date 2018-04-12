@@ -16,7 +16,6 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     private static final int WIDTH = 400;
     private static final int HEIGHT = 400;
-//    "192.168.31.230"
 
     private static final String WINDOW_TITLE = "Storage Client";
 
@@ -66,7 +65,6 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         panel.add(btnLogin);
         panel.add(btnReg);
         add(panel, BorderLayout.EAST);
-
 
         log.setRows(5);
         log.setEditable(false);
@@ -178,9 +176,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 panel.add(btnLogin);
                 panel.add(btnReg);
                 panel.revalidate();
-                add(panel, BorderLayout.WEST);
+                add(panel, BorderLayout.EAST);
                 repaint();
-
             default:
                 break;
         }

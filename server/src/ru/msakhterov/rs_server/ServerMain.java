@@ -11,19 +11,22 @@ public class ServerMain {
     private static boolean end = false;
 
     public static void main(String[] args) {
-        System.out.println("Введите:\n\"1\" для старта сервера \n\"2\" для остановки сервера");
+        System.out.println("Введите:\n\"1\" для старта сервера \n\"2\" для остановки сервера \n\"3\" для отображения данных пользователей");
         while (!end) {
             int a = Integer.parseInt(scanner.next());
             switch (a) {
                 case 1:
-                    server.start(8191);
+                    server.start(8192);
                     break;
                 case 2:
                     server.stop();
                     end = true;
                     break;
+                case 3:
+                    server.showUsersData();
+                    break;
                 default:
-                    System.out.println("Повторите ввод:\n\"1\" для старта сервера \n\"2\" для остановки сервера");
+                    System.out.println("Повторите ввод:\n\"1\" для старта сервера \n\"2\" для остановки сервера \n\"3\" для отображения данных пользователей");
                     break;
             }
         }

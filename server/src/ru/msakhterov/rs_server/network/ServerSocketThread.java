@@ -1,5 +1,6 @@
 package ru.msakhterov.rs_server.network;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,6 +17,8 @@ public class ServerSocketThread extends Thread {
         this.port = port;
         this.timeout = timeout;
         this.listener = listener;
+        File rootDir = new File("RemoteStorageFiles\\");
+        if (!rootDir.exists()) rootDir.mkdir();
         start();
     }
 

@@ -5,6 +5,7 @@ import ru.msakhterov.rs_common.Requests;
 import ru.msakhterov.rs_common.SocketThread;
 import ru.msakhterov.rs_common.SocketThreadListener;
 
+import java.io.File;
 import java.net.Socket;
 
 public class ClientThread extends SocketThread {
@@ -18,6 +19,10 @@ public class ClientThread extends SocketThread {
 
     public String getUser() {
         return user;
+    }
+
+    public File getUserDir() {
+        return new File("RemoteStorageFiles\\" + user);
     }
 
     public boolean isAuthorized() {
