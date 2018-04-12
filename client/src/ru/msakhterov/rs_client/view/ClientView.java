@@ -1,5 +1,7 @@
 package ru.msakhterov.rs_client.view;
 
+import java.io.File;
+
 public interface ClientView {
 
     String getIP();
@@ -11,6 +13,8 @@ public interface ClientView {
     String getPassword();
 
     String getEmail();
+
+    File getFilePath();
 
     void logAppend(String msg);
 

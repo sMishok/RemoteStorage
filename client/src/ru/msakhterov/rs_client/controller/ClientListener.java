@@ -11,6 +11,4 @@ public interface ClientListener {
     void onUpload();
 
     void onDownload();
-
-
 }

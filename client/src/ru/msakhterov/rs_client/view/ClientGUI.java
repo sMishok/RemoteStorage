@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -138,6 +139,19 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     @Override
     public String getEmail() {
         return tfEmail.getText();
+    }
+
+    @Override
+    public File getFilePath() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Выбор файла");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        int result = fileChooser.showOpenDialog(this);
+        File selectedFilePath = null;
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedFilePath = fileChooser.getSelectedFile();
+        }
+        return selectedFilePath;
     }
 
     @Override

@@ -42,15 +42,9 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     public void onUpload() {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Выбор файла");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        int result = fileChooser.showOpenDialog((Component)client);
-        if (result == JFileChooser.APPROVE_OPTION){
-            File selectedFile = fileChooser.getSelectedFile();
-            if (selectedFile != null){
-                loadFile(selectedFile);
-            }
+        File selectedFile = client.getFilePath();
+        if (selectedFile != null) {
+            loadFile(selectedFile);
         }
     }
 
@@ -138,7 +132,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
         client.logAppend(e.toString());
     }
 
-    private void loadFile(File file){
+    private void loadFile(File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer, 0, fis.available());
