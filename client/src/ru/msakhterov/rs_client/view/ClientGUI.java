@@ -4,24 +4,33 @@ import ru.msakhterov.rs_client.controller.ClientController;
 import ru.msakhterov.rs_client.controller.ClientListener;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Vector;
 
 public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler,
-        ActionListener, ClientView {
+        ActionListener, ListSelectionListener, ClientView {
 
-    private static final int WIDTH = 400;
+    private static final int WIDTH = 500;
     private static final int HEIGHT = 400;
 
     private static final String WINDOW_TITLE = "Storage Client";
+    private final JPanel rightPanel = new JPanel(new GridLayout(8, 1));
+    private final Box leftPanel = new Box(BoxLayout.Y_AXIS);
+    private final DefaultTableModel tableModel = new DefaultTableModel();
 
     private final JTextArea log = new JTextArea();
-    private final JPanel panel = new JPanel(new GridLayout(8, 1));
+    private final JTable table = new JTable();
+    private Object[] columnsHeader = new String[]{"Наименование", "Размер", "Дата изменения"};
     private final JTextField tfIPAddress = new JTextField("localhost");
     private final JTextField tfPort = new JTextField("8190");
     private final JTextField tfEmail = new JTextField("test1@test.ru");
@@ -36,6 +45,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     private ClientListener controller;
+    private boolean isSelected = false;
+    private int selectedRow;
 
     public ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -44,6 +55,31 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         setSize(WIDTH, HEIGHT);
         setLocationRelativeTo(null);
         setTitle(WINDOW_TITLE);
+
+        rightPanel.add(cbAlwaysOnTop);
+        rightPanel.add(tfIPAddress);
+        rightPanel.add(tfPort);
+        rightPanel.add(tfLogin);
+        rightPanel.add(tfPassword);
+        rightPanel.add(tfEmail);
+        rightPanel.add(btnLogin);
+        rightPanel.add(btnReg);
+        add(rightPanel, BorderLayout.EAST);
+
+        tableModel.setColumnIdentifiers(columnsHeader);
+        table.setModel(tableModel);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        setColumnsWidth();
+        ListSelectionModel selModel = table.getSelectionModel();
+        selModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        log.setRows(5);
+        log.setEditable(false);
+        log.setLineWrap(true);
+
+        leftPanel.add(new JScrollPane(table));
+        leftPanel.add(new JScrollPane(log));
+        add(leftPanel);
 
         cbAlwaysOnTop.addActionListener(this);
         tfIPAddress.addActionListener(this);
@@ -56,22 +92,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         btnDisconnect.addActionListener(this);
         btnUpload.addActionListener(this);
         btnDownload.addActionListener(this);
-
-        panel.add(cbAlwaysOnTop);
-        panel.add(tfIPAddress);
-        panel.add(tfPort);
-        panel.add(tfLogin);
-        panel.add(tfPassword);
-        panel.add(tfEmail);
-        panel.add(btnLogin);
-        panel.add(btnReg);
-        add(panel, BorderLayout.EAST);
-
-        log.setRows(5);
-        log.setEditable(false);
-        log.setLineWrap(true);
-        JScrollPane scrollLog = new JScrollPane(log);
-        add(scrollLog, BorderLayout.CENTER);
+        selModel.addListSelectionListener(this);
 
         controller = new ClientController(this);
         setResizable(false);
@@ -165,32 +186,32 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     public void setView(ViewStatement statement) {
         switch (statement) {
             case CONNECTED:
-                panel.remove(tfIPAddress);
-                panel.remove(tfPort);
-                panel.remove(tfLogin);
-                panel.remove(tfPassword);
-                panel.remove(tfEmail);
-                panel.remove(btnLogin);
-                panel.remove(btnReg);
-                panel.add(btnDisconnect);
-                panel.add(btnUpload);
-                panel.add(btnDownload);
-                panel.revalidate();
+                rightPanel.remove(tfIPAddress);
+                rightPanel.remove(tfPort);
+                rightPanel.remove(tfLogin);
+                rightPanel.remove(tfPassword);
+                rightPanel.remove(tfEmail);
+                rightPanel.remove(btnLogin);
+                rightPanel.remove(btnReg);
+                rightPanel.add(btnDisconnect);
+                rightPanel.add(btnUpload);
+                rightPanel.add(btnDownload);
+                rightPanel.revalidate();
                 repaint();
                 break;
             case DISCONNECTED:
-                panel.remove(btnDisconnect);
-                panel.remove(btnUpload);
-                panel.remove(btnDownload);
-                panel.add(tfIPAddress);
-                panel.add(tfPort);
-                panel.add(tfLogin);
-                panel.add(tfPassword);
-                panel.add(tfEmail);
-                panel.add(btnLogin);
-                panel.add(btnReg);
-                panel.revalidate();
-                add(panel, BorderLayout.EAST);
+                rightPanel.remove(btnDisconnect);
+                rightPanel.remove(btnUpload);
+                rightPanel.remove(btnDownload);
+                rightPanel.add(tfIPAddress);
+                rightPanel.add(tfPort);
+                rightPanel.add(tfLogin);
+                rightPanel.add(tfPassword);
+                rightPanel.add(tfEmail);
+                rightPanel.add(btnLogin);
+                rightPanel.add(btnReg);
+                rightPanel.revalidate();
+                add(rightPanel, BorderLayout.EAST);
                 repaint();
             default:
                 break;
@@ -201,5 +222,48 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     public void setViewTitle(String title) {
         if (title != null) setTitle(WINDOW_TITLE + ": " + title);
         else setTitle(WINDOW_TITLE);
+    }
+
+    @Override
+    public void setFilesList(String[][] filesList) {
+        if (filesList != null) {
+            for (int j = 0; j < filesList.length; j++) {
+                Vector<String> row = new Vector<String>();
+                for (int i = 0; i < filesList[j].length; i++) {
+                    row.add((String) filesList[j][i]);
+                }
+                tableModel.insertRow(j, row);
+            }
+        }
+
+    }
+
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        if ((selectedRow = table.getSelectedRow()) > 0) {
+            isSelected = true;
+        }
+    }
+
+    private void setColumnsWidth() {
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        JTableHeader tableHeader = table.getTableHeader();
+        int tableWidth = table.getWidth();
+        System.out.println(tableWidth);
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            TableColumn column = table.getColumnModel().getColumn(i);
+            String columnName = tableHeader.getTable().getColumnName(i);
+            switch (columnName) {
+                case "Наименование":
+                    column.setPreferredWidth(232);
+                    break;
+                case "Размер":
+                    column.setPreferredWidth(55);
+                    break;
+                case "Дата изменения":
+                    column.setPreferredWidth(100);
+                    break;
+            }
+        }
     }
 }

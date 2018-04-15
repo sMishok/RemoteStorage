@@ -20,5 +20,7 @@ public interface ClientView {
 
     void setView(ViewStatement statement);
 
+    void setFilesList(String[][] filesList);
+
     void setViewTitle(String title);
 }

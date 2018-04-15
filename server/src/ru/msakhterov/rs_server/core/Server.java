@@ -1,6 +1,5 @@
 package ru.msakhterov.rs_server.core;
 
-import ru.msakhterov.rs_common.Requests;
 import ru.msakhterov.rs_common.SocketThread;
 import ru.msakhterov.rs_common.SocketThreadListener;
 import ru.msakhterov.rs_server.db.SqlClient;
@@ -8,18 +7,15 @@ import ru.msakhterov.rs_server.network.ClientThread;
 import ru.msakhterov.rs_server.network.ServerSocketThread;
 import ru.msakhterov.rs_server.network.ServerSocketThreadListener;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static ru.msakhterov.rs_common.Logger.putLog;
 
 public class Server implements ServerSocketThreadListener, SocketThreadListener {
     private ServerSocketThread serverSocketThread;
-    private Vector<SocketThread> clients = new Vector<>();
+    private CopyOnWriteArrayList<SocketThread> clients = new CopyOnWriteArrayList<>();
 
     public void start(int port) {
         if (serverSocketThread != null && serverSocketThread.isAlive()) {
@@ -64,6 +60,7 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
 
     @Override
     public void onAcceptTimeout(ServerSocketThread thread, ServerSocket serverSocket) {
+//        putLog("Истек таймаут подключения");
     }
 
     @Override
@@ -100,97 +97,99 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
     public synchronized void onReceiveRequest(SocketThread thread, Socket socket, Object request) {
         ClientThread client = (ClientThread) thread;
         if (client.isAuthorized()) {
-            handleAuthRequest(client, request);
+            RequestService.checkAuthRequest(client, request);
+//            handleAuthRequest(client, request);
         } else {
-            handleNonAuthRequest(client, request);
+            RequestService.checkNonAuthRequest(client, request);
+//            handleNonAuthRequest(client, request);
         }
     }
 
     @Override
     public synchronized void onSocketThreadException(SocketThread thread, Exception e) {
-        e.printStackTrace();
+        putLog("Exception: " + e.getClass().getName() + ": " + e.getMessage());
     }
 
-    private ClientThread findClientByNickname(String nickname) {
-        for (int i = 0; i < clients.size(); i++) {
-            ClientThread client = (ClientThread) clients.get(i);
-            if (!client.isAuthorized()) continue;
-            if (client.getUser().equals(nickname))
-                return client;
-        }
-        return null;
-    }
+//    private ClientThread findClientByNickname(String nickname) {
+//        for (int i = 0; i < clients.size(); i++) {
+//            ClientThread client = (ClientThread) clients.get(i);
+//            if (!client.isAuthorized()) continue;
+//            if (client.getUser().equals(nickname))
+//                return client;
+//        }
+//        return null;
+//    }
 
-    private void handleAuthRequest(ClientThread client, Object request) {
-        if (request instanceof Object[]) {
-            Object[] requestArr = (Object[]) request;
-            String requestTitle = (String) requestArr[0];
-            String[] arr = requestTitle.split(Requests.DELIMITER);
-            String msgType = arr[0];
-            switch (msgType) {
-                case Requests.UPLOAD_REQUEST:
-                    File newFile = new File (client.getUserDir(), arr[1]);
-                    try(FileOutputStream fos = new FileOutputStream(newFile)){
-                        byte[] buffer = (byte[])requestArr[1];
-                        fos.write(buffer, 0, buffer.length);
-                        putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
-                    } catch (IOException e){
-                        putLog("Exception: " + e.getMessage());
-                    }
-                    break;
+//    private void handleAuthRequest(ClientThread client, Object request) {
+//        if (request instanceof Object[]) {
+//            Object[] requestArr = (Object[]) request;
+//            String requestTitle = (String) requestArr[0];
+//            String[] arr = requestTitle.split(Requests.DELIMITER);
+//            String msgType = arr[0];
+//            switch (msgType) {
+//                case Requests.UPLOAD_REQUEST:
+//                    File newFile = new File (client.getUserDir(), arr[1]);
+//                    try(FileOutputStream fos = new FileOutputStream(newFile)){
+//                        byte[] buffer = (byte[])requestArr[1];
+//                        fos.write(buffer, 0, buffer.length);
+//                        putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
+//                    } catch (IOException e){
+//                        putLog("Exception: " + e.getMessage());
+//                    }
+//                    break;
+//
+//                case Requests.TYPE_REQUEST:
+//                    break;
+//                default:
+//                    client.requestFormatError(requestTitle);
+//            }
+//        }
+//    }
 
-                case Requests.TYPE_REQUEST:
-                    break;
-                default:
-                    client.requestFormatError(requestTitle);
-            }
-        }
-    }
-
-    private void handleNonAuthRequest(ClientThread newClient, Object request) {
-        if (request instanceof Object[]) {
-            Object[] requestArr = (Object[]) request;
-            String requestTitle = (String) requestArr[0];
-            String[] arr = requestTitle.split(Requests.DELIMITER);
-
-            if (arr.length < 3) {
-                newClient.requestFormatError(requestTitle);
-                return;
-            }
-            String login;
-            String password;
-            String email;
-            String user;
-            switch (arr[0]) {
-                case Requests.AUTH_REQUEST:
-                    login = arr[1];
-                    password = arr[2];
-                    user = SqlClient.checkAuth(login, password);
-                    if (user == null) {
-                        putLog("Некорректные login/password: login '" +
-                                login + "' password: '" + password + "'");
-                        newClient.authorizeError();
-                        return;
-                    }
-                    newClient.authorizeAccept(user);
-                    break;
-                case Requests.REG_REQUEST:
-                    login = arr[1];
-                    password = arr[2];
-                    email = arr[3];
-                    user = SqlClient.makeReg(login, password, email);
-                    if (user == null) {
-                        putLog("Email: " + email + "уже зарегистрирован");
-                        newClient.regError();
-                        return;
-                    }
-                    newClient.authorizeAccept(user);
-                    break;
-                default:
-                    newClient.requestFormatError(requestTitle);
-                    break;
-            }
-        }
-    }
+//    private void handleNonAuthRequest(ClientThread newClient, Object request) {
+//        if (request instanceof Object[]) {
+//            Object[] requestArr = (Object[]) request;
+//            String requestTitle = (String) requestArr[0];
+//            String[] arr = requestTitle.split(Requests.DELIMITER);
+//
+//            if (arr.length < 3) {
+//                newClient.requestFormatError(requestTitle);
+//                return;
+//            }
+//            String login;
+//            String password;
+//            String email;
+//            String user;
+//            switch (arr[0]) {
+//                case Requests.AUTH_REQUEST:
+//                    login = arr[1];
+//                    password = arr[2];
+//                    user = SqlClient.checkAuth(login, password);
+//                    if (user == null) {
+//                        putLog("Некорректные login/password: login '" +
+//                                login + "' password: '" + password + "'");
+//                        newClient.authorizeError();
+//                        return;
+//                    }
+//                    newClient.authorizeAccept(user);
+//                    break;
+//                case Requests.REG_REQUEST:
+//                    login = arr[1];
+//                    password = arr[2];
+//                    email = arr[3];
+//                    user = SqlClient.makeReg(login, password, email);
+//                    if (user == null) {
+//                        putLog("Email: " + email + "уже зарегистрирован");
+//                        newClient.regError();
+//                        return;
+//                    }
+//                    newClient.authorizeAccept(user);
+//                    break;
+//                default:
+//                    newClient.requestFormatError(requestTitle);
+//                    break;
+//            }
+//        }
+//    }
 }
 

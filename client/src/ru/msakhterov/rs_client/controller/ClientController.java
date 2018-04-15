@@ -8,7 +8,6 @@ import ru.msakhterov.rs_common.SocketThread;
 import ru.msakhterov.rs_common.SocketThreadListener;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -75,6 +74,12 @@ public class ClientController implements ClientListener, SocketThreadListener {
                 case Requests.AUTH_DENIED:
                     client.logAppend(requestTitle);
                     break;
+                case Requests.FILES_LIST_REQUEST:
+                    client.setFilesList((String[][]) requestArr[1]);
+                    break;
+                case Requests.EMPTY_FILES_DIR_REQUEST:
+                    client.logAppend(requestTitle);
+                    break;
                 case Requests.REG_ACCEPT:
                     client.setViewTitle(arr[1]);
                     break;
@@ -136,7 +141,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer, 0, fis.available());
-            Object request = RequestMaker.makeRequest(Requests.getUploadRequest(file.getName()), buffer);
+            Object request = RequestMaker.makeFileRequest(Requests.getUploadRequest(file.getName()), buffer);
             socketThread.sendRequest(request);
 
             //Test

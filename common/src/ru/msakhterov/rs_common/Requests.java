@@ -14,6 +14,8 @@ public class Requests {
     public static final String UPLOAD_DENIED = "/upload_denied";
     public static final String DOWNLOAD_REQUEST = "/download_request";
     public static final String DOWNLOAD_ACCEPT = "/download_accept";
+    public static final String FILES_LIST_REQUEST = "/files_list_request";
+    public static final String EMPTY_FILES_DIR_REQUEST = "/empty_files_dir_request";
     public static final String DOWNLOAD_DENIED = "/download_denied";
     public static final String REQUEST_FORMAT_ERROR = "/request_format_error";
     public static final String TYPE_REQUEST = "/request";
@@ -68,6 +70,14 @@ public class Requests {
 
     public static String getDownloadDenied() {
         return DOWNLOAD_DENIED;
+    }
+
+    public static String getFilesListRequest() {
+        return FILES_LIST_REQUEST;
+    }
+
+    public static String getEmptyFilesDir() {
+        return EMPTY_FILES_DIR_REQUEST;
     }
 
     public static String getReqestFormatError(String message) {
