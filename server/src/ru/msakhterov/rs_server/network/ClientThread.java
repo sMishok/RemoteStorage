@@ -31,24 +31,27 @@ public class ClientThread extends SocketThread {
         return isAuthorized;
     }
 
-    public void authorizeAccept(String user) {
+    public void authorizeAccept(String user, Object filesList) {
         isAuthorized = true;
         this.user = user;
         sendRequest(Requests.getAuthAccept(user));
-        Object filesList = RequestService.getFilesList(this);
         if (filesList != null) {
             Object request = RequestMaker.makeFilesListRequest(Requests.getFilesListRequest(), RequestService.getFilesList(this));
             sendRequest(request);
         } else {
             sendRequest(Requests.getEmptyFilesDir());
         }
-
-
     }
 
     public void authorizeError() {
         sendRequest(Requests.getAuthDenied());
         close();
+    }
+
+    public void regAccept(String user) {
+        isAuthorized = true;
+        this.user = user;
+        sendRequest(Requests.getRegAccept(user));
     }
 
     public void regError() {

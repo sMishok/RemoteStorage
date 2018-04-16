@@ -13,7 +13,7 @@ import static ru.msakhterov.rs_common.Logger.putLog;
 
 public class RequestService {
 
-    public static void checkNonAuthRequest(ClientThread client, Object request) {
+    public void checkNonAuthRequest(ClientThread client, Object request) {
         if (request instanceof Object[]) {
             Object[] requestArr = (Object[]) request;
             String requestTitle = (String) requestArr[0];
@@ -38,7 +38,8 @@ public class RequestService {
                         client.authorizeError();
                         return;
                     }
-                    client.authorizeAccept(user);
+                    Object filesList = getFilesList(client);
+                    client.authorizeAccept(user, filesList);
                     break;
                 case Requests.REG_REQUEST:
                     login = arr[1];
@@ -50,7 +51,7 @@ public class RequestService {
                         client.regError();
                         return;
                     }
-                    client.authorizeAccept(user);
+                    client.regAccept(user);
                     break;
                 default:
                     client.requestFormatError(requestTitle);
@@ -59,7 +60,7 @@ public class RequestService {
         }
     }
 
-    public static void checkAuthRequest(ClientThread client, Object request) {
+    public void checkAuthRequest(ClientThread client, Object request) {
         if (request instanceof Object[]) {
             Object[] requestArr = (Object[]) request;
             String requestTitle = (String) requestArr[0];

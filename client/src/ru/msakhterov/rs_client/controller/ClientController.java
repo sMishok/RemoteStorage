@@ -70,21 +70,23 @@ public class ClientController implements ClientListener, SocketThreadListener {
             switch (msgType) {
                 case Requests.AUTH_ACCEPT:
                     client.setViewTitle(arr[1]);
+                    client.logAppend("Успешная авторизация");
                     break;
                 case Requests.AUTH_DENIED:
-                    client.logAppend(requestTitle);
+                    client.logAppend("Ошибка авторизации");
                     break;
                 case Requests.FILES_LIST_REQUEST:
                     client.setFilesList((String[][]) requestArr[1]);
                     break;
                 case Requests.EMPTY_FILES_DIR_REQUEST:
-                    client.logAppend(requestTitle);
+                    client.logAppend("Хранилище не содержит файлов");
                     break;
                 case Requests.REG_ACCEPT:
                     client.setViewTitle(arr[1]);
+                    client.logAppend("Успешная авторизация");
                     break;
                 case Requests.REG_DENIED:
-                    client.logAppend(requestTitle);
+                    client.logAppend("Ошибка регистрации");
                     break;
                 case Requests.REQUEST_FORMAT_ERROR:
                     client.logAppend(requestTitle);
