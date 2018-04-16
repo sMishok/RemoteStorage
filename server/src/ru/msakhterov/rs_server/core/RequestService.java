@@ -38,8 +38,8 @@ public class RequestService {
                         client.authorizeError();
                         return;
                     }
-                    Object filesList = getFilesList(client);
-                    client.authorizeAccept(user, filesList);
+                    client.authorizeAccept(user);
+                    client.sendFileList(getFilesList(client));
                     break;
                 case Requests.REG_REQUEST:
                     login = arr[1];
@@ -73,6 +73,7 @@ public class RequestService {
                         byte[] buffer = (byte[]) requestArr[1];
                         fos.write(buffer, 0, buffer.length);
                         putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
+                        client.sendFileList(getFilesList(client));
 
                     } catch (IOException e) {
                         putLog("Exception: " + e.getMessage());

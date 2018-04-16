@@ -227,6 +227,9 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     @Override
     public void setFilesList(String[][] filesList) {
         if (filesList != null) {
+            while (tableModel.getRowCount() > 0) {
+                tableModel.removeRow(0);
+            }
             for (int j = 0; j < filesList.length; j++) {
                 Vector<String> row = new Vector<String>();
                 for (int i = 0; i < filesList[j].length; i++) {
@@ -235,7 +238,6 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 tableModel.insertRow(j, row);
             }
         }
-
     }
 
     @Override
@@ -255,13 +257,13 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
             String columnName = tableHeader.getTable().getColumnName(i);
             switch (columnName) {
                 case "Наименование":
-                    column.setPreferredWidth(232);
+                    column.setPreferredWidth(211);
                     break;
                 case "Размер":
                     column.setPreferredWidth(55);
                     break;
                 case "Дата изменения":
-                    column.setPreferredWidth(100);
+                    column.setPreferredWidth(120);
                     break;
             }
         }

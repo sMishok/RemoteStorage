@@ -31,16 +31,10 @@ public class ClientThread extends SocketThread {
         return isAuthorized;
     }
 
-    public void authorizeAccept(String user, Object filesList) {
+    public void authorizeAccept(String user) {
         isAuthorized = true;
         this.user = user;
         sendRequest(Requests.getAuthAccept(user));
-        if (filesList != null) {
-            Object request = RequestMaker.makeFilesListRequest(Requests.getFilesListRequest(), RequestService.getFilesList(this));
-            sendRequest(request);
-        } else {
-            sendRequest(Requests.getEmptyFilesDir());
-        }
     }
 
     public void authorizeError() {
@@ -63,4 +57,14 @@ public class ClientThread extends SocketThread {
         sendRequest(Requests.getReqestFormatError(value));
         close();
     }
+
+    public void sendFileList(Object filesList) {
+        if (filesList != null) {
+            Object request = RequestMaker.makeFilesListRequest(Requests.getFilesListRequest(), RequestService.getFilesList(this));
+            sendRequest(request);
+        } else {
+            sendRequest(Requests.getEmptyFilesDir());
+        }
+    }
+
 }
