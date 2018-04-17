@@ -113,7 +113,9 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         } else if (src == btnUpload) {
             controller.onUpload();
         } else if (src == btnDownload) {
-            controller.onDownload();
+            if (isSelected)
+            controller.onDownload(getSelectedFileName());
+            else JOptionPane.showMessageDialog(this, "Выберите файл для загрузки", "Загрузка файла", JOptionPane.INFORMATION_MESSAGE);
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
@@ -163,14 +165,27 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     }
 
     @Override
-    public File getFilePath() {
+    public File getFilePath(int selector) {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Выбор файла");
-        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        int result = fileChooser.showOpenDialog(this);
         File selectedFilePath = null;
-        if (result == JFileChooser.APPROVE_OPTION) {
-            selectedFilePath = fileChooser.getSelectedFile();
+        int result = 0;
+        switch (selector){
+            case 0:
+                fileChooser.setDialogTitle("Выбор файла");
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                result = fileChooser.showOpenDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    selectedFilePath = fileChooser.getSelectedFile();
+                }
+                break;
+            case 1:
+                fileChooser.setDialogTitle("Выбор файла");
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                result = fileChooser.showSaveDialog(this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    selectedFilePath = fileChooser.getSelectedFile();
+                }
+                break;
         }
         return selectedFilePath;
     }
@@ -242,9 +257,13 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
-        if ((selectedRow = table.getSelectedRow()) > 0) {
+        if ((selectedRow = table.getSelectedRow()) > -1) {
             isSelected = true;
         }
+    }
+
+    private String getSelectedFileName() {
+        return tableModel.getValueAt(selectedRow, 0).toString();
     }
 
     private void setColumnsWidth() {

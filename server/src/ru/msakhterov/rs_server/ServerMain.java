@@ -16,7 +16,7 @@ public class ServerMain {
             int a = Integer.parseInt(scanner.next());
             switch (a) {
                 case 1:
-                    server.start(8192);
+                    server.start(8190);
                     break;
                 case 2:
                     server.stop();

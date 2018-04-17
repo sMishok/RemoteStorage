@@ -64,8 +64,8 @@ public class Requests {
         return DOWNLOAD_REQUEST + DELIMITER + fileName;
     }
 
-    public static String getDownloadAccept() {
-        return DOWNLOAD_ACCEPT;
+    public static String getDownloadAccept(String fileName) {
+        return DOWNLOAD_ACCEPT + DELIMITER + fileName;
     }
 
     public static String getDownloadDenied() {

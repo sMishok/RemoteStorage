@@ -1,10 +1,12 @@
 package ru.msakhterov.rs_server.core;
 
+import ru.msakhterov.rs_common.RequestMaker;
 import ru.msakhterov.rs_common.Requests;
 import ru.msakhterov.rs_server.db.SqlClient;
 import ru.msakhterov.rs_server.network.ClientThread;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -68,13 +70,24 @@ public class RequestService {
             String msgType = arr[0];
             switch (msgType) {
                 case Requests.UPLOAD_REQUEST:
-                    File newFile = new File(client.getUserDir(), arr[1]);
-                    try (FileOutputStream fos = new FileOutputStream(newFile)) {
+                    File uploadFile = new File(client.getUserDir(), arr[1]);
+                    try (FileOutputStream fos = new FileOutputStream(uploadFile)) {
                         byte[] buffer = (byte[]) requestArr[1];
                         fos.write(buffer, 0, buffer.length);
                         putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
                         client.sendFileList(getFilesList(client));
 
+                    } catch (IOException e) {
+                        putLog("Exception: " + e.getMessage());
+                    }
+                    break;
+                case Requests.DOWNLOAD_REQUEST:
+                    File downloadFile = new File(client.getUserDir(), arr[1]);
+                    try (FileInputStream fis = new FileInputStream(downloadFile)) {
+                        byte[] buffer = new byte[fis.available()];
+                        fis.read(buffer, 0, fis.available());
+                        Object downloadAcceptRequest = RequestMaker.makeFileRequest(Requests.getDownloadAccept(downloadFile.getName()), buffer);
+                        client.sendRequest(downloadAcceptRequest);
                     } catch (IOException e) {
                         putLog("Exception: " + e.getMessage());
                     }

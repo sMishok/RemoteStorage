@@ -10,8 +10,11 @@ import ru.msakhterov.rs_common.SocketThreadListener;
 import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+
+import static ru.msakhterov.rs_common.Logger.putLog;
 
 public class ClientController implements ClientListener, SocketThreadListener {
 
@@ -41,14 +44,14 @@ public class ClientController implements ClientListener, SocketThreadListener {
     }
 
     public void onUpload() {
-        File selectedFile = client.getFilePath();
+        File selectedFile = client.getFilePath(0);
         if (selectedFile != null) {
-            loadFile(selectedFile);
+            uploadFile(selectedFile);
         }
     }
 
-    public void onDownload() {
-
+    public void onDownload(String fileName) {
+        socketThread.sendRequest(Requests.getDownloadRequest(fileName));
     }
 
     private void connect() {
@@ -84,6 +87,12 @@ public class ClientController implements ClientListener, SocketThreadListener {
                 case Requests.REG_ACCEPT:
                     client.setViewTitle(arr[1]);
                     client.logAppend("Успешная авторизация");
+                    break;
+                case Requests.DOWNLOAD_ACCEPT:
+                    downloadFile(requestArr[1]);
+
+//                    client.setViewTitle(arr[1]);
+//                    client.logAppend("Успешная авторизация");
                     break;
                 case Requests.REG_DENIED:
                     client.logAppend("Ошибка регистрации");
@@ -139,7 +148,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
         client.logAppend(e.toString());
     }
 
-    private void loadFile(File file) {
+    private void uploadFile(File file) {
         try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer, 0, fis.available());
@@ -155,6 +164,18 @@ public class ClientController implements ClientListener, SocketThreadListener {
             client.logAppend("File load exception: " + e.getMessage());
         }
     }
+
+    private void downloadFile(Object downloadFile) {
+        File selectedFile = client.getFilePath(1);
+        try (FileOutputStream fos = new FileOutputStream(selectedFile)) {
+            byte[] buffer = (byte[]) downloadFile;
+            fos.write(buffer, 0, buffer.length);
+
+        } catch (IOException e) {
+            putLog("Exception: " + e.getMessage());
+        }
+    }
+
 }
 
 

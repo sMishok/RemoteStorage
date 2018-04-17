@@ -14,7 +14,7 @@ public interface ClientView {
 
     String getEmail();
 
-    File getFilePath();
+    File getFilePath(int selector);
 
     void logAppend(String msg);
 
