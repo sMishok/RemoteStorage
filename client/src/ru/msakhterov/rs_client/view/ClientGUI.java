@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -78,7 +79,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         log.setEditable(false);
         log.setLineWrap(true);
 
-        leftPanel.add(new JScrollPane(table));
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        leftPanel.add(tableScrollPane);
         leftPanel.add(new JScrollPane(log));
         add(leftPanel);
 
@@ -97,6 +99,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         selModel.addListSelectionListener(this);
 
         controller = new ClientController(this);
+        DragAndDropListener dnd = new DragAndDropListener(this);
+        new DropTarget(tableScrollPane, dnd);
         setResizable(false);
         setVisible(true);
     }
@@ -125,6 +129,10 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
+    }
+
+    public void uploadDraggedFile(String filePath){
+        controller.onUpload(filePath);
     }
 
     @Override

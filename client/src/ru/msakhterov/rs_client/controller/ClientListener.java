@@ -10,6 +10,8 @@ public interface ClientListener {
 
     void onUpload();
 
+    void onUpload(String filepath);
+
     void onDownload(String fileName);
 
     void onDelete(String fileName);

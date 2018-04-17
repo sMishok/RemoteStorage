@@ -50,6 +50,13 @@ public class ClientController implements ClientListener, SocketThreadListener {
             uploadFile(selectedFile);
         }
     }
+    @Override
+    public void onUpload(String filePath) {
+        File selectedFile = new File(filePath);
+        if (selectedFile != null) {
+            uploadFile(selectedFile);
+        }
+    }
 
     @Override
     public void onDownload(String fileName) {
@@ -173,6 +180,8 @@ public class ClientController implements ClientListener, SocketThreadListener {
             putLog("Exception: " + e.getMessage());
         }
     }
+
+
 
 }
 
