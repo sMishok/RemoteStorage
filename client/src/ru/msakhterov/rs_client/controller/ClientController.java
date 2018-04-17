@@ -43,6 +43,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
         socketThread.close();
     }
 
+    @Override
     public void onUpload() {
         File selectedFile = client.getFilePath(0);
         if (selectedFile != null) {
@@ -50,8 +51,14 @@ public class ClientController implements ClientListener, SocketThreadListener {
         }
     }
 
+    @Override
     public void onDownload(String fileName) {
         socketThread.sendRequest(Requests.getDownloadRequest(fileName));
+    }
+
+    @Override
+    public void onDelete(String fileName) {
+        socketThread.sendRequest(Requests.getDeleteRequest(fileName));
     }
 
     private void connect() {
@@ -90,9 +97,6 @@ public class ClientController implements ClientListener, SocketThreadListener {
                     break;
                 case Requests.DOWNLOAD_ACCEPT:
                     downloadFile(requestArr[1]);
-
-//                    client.setViewTitle(arr[1]);
-//                    client.logAppend("Успешная авторизация");
                     break;
                 case Requests.REG_DENIED:
                     client.logAppend("Ошибка регистрации");

@@ -42,6 +42,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private final JButton btnDisconnect = new JButton("Disconnect");
     private final JButton btnUpload = new JButton("Upload");
     private final JButton btnDownload = new JButton("Download");
+    private final JButton btnDelete = new JButton("Delete");
 
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
     private ClientListener controller;
@@ -92,6 +93,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         btnDisconnect.addActionListener(this);
         btnUpload.addActionListener(this);
         btnDownload.addActionListener(this);
+        btnDelete.addActionListener(this);
         selModel.addListSelectionListener(this);
 
         controller = new ClientController(this);
@@ -116,6 +118,10 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
             if (isSelected)
             controller.onDownload(getSelectedFileName());
             else JOptionPane.showMessageDialog(this, "Выберите файл для загрузки", "Загрузка файла", JOptionPane.INFORMATION_MESSAGE);
+        } else if (src == btnDelete) {
+            if (isSelected)
+                controller.onDelete(getSelectedFileName());
+            else JOptionPane.showMessageDialog(this, "Выберите файл для удаления", "Удаление файла", JOptionPane.INFORMATION_MESSAGE);
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
@@ -211,6 +217,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 rightPanel.add(btnDisconnect);
                 rightPanel.add(btnUpload);
                 rightPanel.add(btnDownload);
+                rightPanel.add(btnDelete);
                 rightPanel.revalidate();
                 repaint();
                 break;
@@ -218,6 +225,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 rightPanel.remove(btnDisconnect);
                 rightPanel.remove(btnUpload);
                 rightPanel.remove(btnDownload);
+                rightPanel.remove(btnDelete);
                 rightPanel.add(tfIPAddress);
                 rightPanel.add(tfPort);
                 rightPanel.add(tfLogin);

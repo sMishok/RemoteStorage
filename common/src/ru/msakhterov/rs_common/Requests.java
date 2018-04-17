@@ -14,6 +14,7 @@ public class Requests {
     public static final String UPLOAD_DENIED = "/upload_denied";
     public static final String DOWNLOAD_REQUEST = "/download_request";
     public static final String DOWNLOAD_ACCEPT = "/download_accept";
+    public static final String DELETE_REQUEST = "/delete_request";
     public static final String FILES_LIST_REQUEST = "/files_list_request";
     public static final String EMPTY_FILES_DIR_REQUEST = "/empty_files_dir_request";
     public static final String DOWNLOAD_DENIED = "/download_denied";
@@ -70,6 +71,11 @@ public class Requests {
 
     public static String getDownloadDenied() {
         return DOWNLOAD_DENIED;
+    }
+
+    //Удаление файла на сервере
+    public static String getDeleteRequest(String fileName) {
+        return DELETE_REQUEST + DELIMITER + fileName;
     }
 
     public static String getFilesListRequest() {

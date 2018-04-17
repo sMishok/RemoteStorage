@@ -92,6 +92,11 @@ public class RequestService {
                         putLog("Exception: " + e.getMessage());
                     }
                     break;
+                case Requests.DELETE_REQUEST:
+                    File deleteFile = new File(client.getUserDir(), arr[1]);
+                    deleteFile.delete();
+                    client.sendFileList(getFilesList(client));
+                    break;
 
                 case Requests.TYPE_REQUEST:
                     break;
@@ -102,7 +107,7 @@ public class RequestService {
     }
 
     public static Object getFilesList(ClientThread client) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd:MM:yy HH:mm:ss - ");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd:MM:yy HH:mm:ss");
         Object filesList = null;
         File userDir = client.getUserDir();
         File[] userFiles = userDir.listFiles();
