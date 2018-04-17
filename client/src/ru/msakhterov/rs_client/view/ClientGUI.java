@@ -182,12 +182,10 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     public File getFilePath(String fileName) {
         JFileChooser fileChooser = new JFileChooser();
         File selectedFilePath = null;
-        int result = 0;
         if (fileName == null) {
             fileChooser.setDialogTitle("Выбор файла");
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            result = fileChooser.showOpenDialog(this);
-            if (result == JFileChooser.APPROVE_OPTION) {
+            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 selectedFilePath = fileChooser.getSelectedFile();
             }
         }
@@ -195,8 +193,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 fileChooser.setDialogTitle("Сохранение файла");
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 fileChooser.setSelectedFile(new File(fileName));
-                result = fileChooser.showSaveDialog(this);
-                if (result == JFileChooser.APPROVE_OPTION) {
+                if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
                     selectedFilePath = fileChooser.getSelectedFile();
                 }
         }
@@ -261,9 +258,9 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 tableModel.removeRow(0);
             }
             for (int j = 0; j < filesList.length; j++) {
-                Vector<String> row = new Vector<String>();
+                Vector<String> row = new Vector<>();
                 for (int i = 0; i < filesList[j].length; i++) {
-                    row.add((String) filesList[j][i]);
+                    row.add(filesList[j][i]);
                 }
                 tableModel.insertRow(j, row);
             }
@@ -284,8 +281,6 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private void setColumnsWidth() {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         JTableHeader tableHeader = table.getTableHeader();
-        int tableWidth = table.getWidth();
-        System.out.println(tableWidth);
         for (int i = 0; i < table.getColumnCount(); i++) {
             TableColumn column = table.getColumnModel().getColumn(i);
             String columnName = tableHeader.getTable().getColumnName(i);
