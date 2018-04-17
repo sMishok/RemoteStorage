@@ -158,12 +158,6 @@ public class ClientController implements ClientListener, SocketThreadListener {
             fis.read(buffer, 0, fis.available());
             Object request = RequestMaker.makeFileRequest(Requests.getUploadRequest(file.getName()), buffer);
             socketThread.sendRequest(request);
-
-            //Test
-            System.out.println("Содержимое файла:");
-            for (int i = 0; i < buffer.length; i++) {
-                System.out.print((char) buffer[i]);
-            }
         } catch (IOException e) {
             client.logAppend("File load exception: " + e.getMessage());
         }
