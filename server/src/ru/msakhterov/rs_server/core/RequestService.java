@@ -74,7 +74,7 @@ public class RequestService {
                     try (FileOutputStream fos = new FileOutputStream(uploadFile)) {
                         byte[] buffer = (byte[]) requestArr[1];
                         fos.write(buffer, 0, buffer.length);
-                        putLog("Пользователем " + client.getUser() + "загружен файл " + arr[1]);
+                        putLog("Пользователем " + client.getUser() + " загружен файл " + arr[1]);
                         client.sendFileList(getFilesList(client));
 
                     } catch (IOException e) {
