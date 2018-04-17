@@ -179,27 +179,26 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     }
 
     @Override
-    public File getFilePath(int selector) {
+    public File getFilePath(String fileName) {
         JFileChooser fileChooser = new JFileChooser();
         File selectedFilePath = null;
         int result = 0;
-        switch (selector){
-            case 0:
-                fileChooser.setDialogTitle("Выбор файла");
+        if (fileName == null) {
+            fileChooser.setDialogTitle("Выбор файла");
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            result = fileChooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                selectedFilePath = fileChooser.getSelectedFile();
+            }
+        }
+         else {
+                fileChooser.setDialogTitle("Сохранение файла");
                 fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                result = fileChooser.showOpenDialog(this);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    selectedFilePath = fileChooser.getSelectedFile();
-                }
-                break;
-            case 1:
-                fileChooser.setDialogTitle("Выбор файла");
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.setSelectedFile(new File(fileName));
                 result = fileChooser.showSaveDialog(this);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     selectedFilePath = fileChooser.getSelectedFile();
                 }
-                break;
         }
         return selectedFilePath;
     }

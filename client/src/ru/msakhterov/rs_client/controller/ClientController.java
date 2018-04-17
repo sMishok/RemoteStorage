@@ -45,7 +45,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
 
     @Override
     public void onUpload() {
-        File selectedFile = client.getFilePath(0);
+        File selectedFile = client.getFilePath(null);
         if (selectedFile != null) {
             uploadFile(selectedFile);
         }
@@ -103,7 +103,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
                     client.logAppend("Успешная авторизация");
                     break;
                 case Requests.DOWNLOAD_ACCEPT:
-                    downloadFile(requestArr[1]);
+                    downloadFile(requestArr[1], arr[1]);
                     break;
                 case Requests.REG_DENIED:
                     client.logAppend("Ошибка регистрации");
@@ -170,19 +170,18 @@ public class ClientController implements ClientListener, SocketThreadListener {
         }
     }
 
-    private void downloadFile(Object downloadFile) {
-        File selectedFile = client.getFilePath(1);
-        try (FileOutputStream fos = new FileOutputStream(selectedFile)) {
-            byte[] buffer = (byte[]) downloadFile;
-            fos.write(buffer, 0, buffer.length);
+    private void downloadFile(Object downloadFile, String fileName) {
+        File selectedFile = client.getFilePath(fileName);
+        if (selectedFile != null) {
+            try (FileOutputStream fos = new FileOutputStream(selectedFile)) {
+                byte[] buffer = (byte[]) downloadFile;
+                fos.write(buffer, 0, buffer.length);
 
-        } catch (IOException e) {
-            putLog("Exception: " + e.getMessage());
+            } catch (IOException e) {
+                putLog("Exception: " + e.getMessage());
+            }
         }
     }
-
-
-
 }
 
 
