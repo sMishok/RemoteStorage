@@ -25,7 +25,6 @@ public class DragAndDropListener implements DropTargetListener {
                     List files = (List) transferable.getTransferData(flavor);
                     for (Object file : files) {
                         client.uploadDraggedFile(file.toString());
-                        JOptionPane.showMessageDialog(null, file);
                     }
                 }
             } catch (Exception e) {
