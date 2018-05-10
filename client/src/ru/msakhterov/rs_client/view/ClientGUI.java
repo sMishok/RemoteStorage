@@ -22,11 +22,19 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private static final int WIDTH = 500;
     private static final int HEIGHT = 400;
 
+    private static final int START_WIDTH = 300;
+    private static final int START_HEIGHT = 400;
+
     private static final String WINDOW_TITLE = "Storage Client";
     private final JPanel rightPanel = new JPanel(new GridLayout(8, 1));
-    private final Box leftPanelConnect = new Box(BoxLayout.Y_AXIS);
-    private final JPanel leftPanelDisconnect = new JPanel(new GridLayout(8, 1));
+    private final Box leftPanel = new Box(BoxLayout.Y_AXIS);
+    private final Box startPanel = new Box(BoxLayout.Y_AXIS);
+    private final JPanel loginPanel = new JPanel(new GridLayout(2, 2));
+    private final JPanel registrationPanel = new JPanel(new GridLayout(3, 2));
     private final DefaultTableModel tableModel = new DefaultTableModel();
+
+    private final JButton signInBtn = new JButton("Sign in");
+    private final JButton signUpBtn = new JButton("Sign up");
 
     private final JTextArea log = new JTextArea();
     private final JTable table = new JTable();
@@ -56,9 +64,18 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         Thread.setDefaultUncaughtExceptionHandler(this);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        setSize(WIDTH, HEIGHT);
+        setSize(START_WIDTH, START_HEIGHT);
         setLocationRelativeTo(null);
         setTitle(WINDOW_TITLE);
+
+        startPanel.add(signInBtn);
+        startPanel.add(signUpBtn);
+
+        loginPanel.add();
+
+        registrationPanel.add();
+
+
 
         rightPanel.add(cbAlwaysOnTop);
         rightPanel.add(tfIPAddress);
@@ -68,7 +85,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         rightPanel.add(tfEmail);
         rightPanel.add(btnLogin);
         rightPanel.add(btnReg);
-        add(rightPanel, BorderLayout.EAST);
+
+//        add(rightPanel, BorderLayout.EAST);
 
         tableModel.setColumnIdentifiers(columnsHeader);
         table.setModel(tableModel);
@@ -85,7 +103,11 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
         tableScrollPane = new JScrollPane(table);
 
-        add(leftPanelConnect);
+//        add(leftPanel);
+
+        signInBtn.addActionListener(this);
+        signUpBtn.addActionListener(this);
+
 
         cbAlwaysOnTop.addActionListener(this);
         tfIPAddress.addActionListener(this);
@@ -114,6 +136,10 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         Object src = e.getSource();
         if (src == cbAlwaysOnTop) {
             setAlwaysOnTop(cbAlwaysOnTop.isSelected());
+        } else if (src == signInBtn) {
+            setView(ViewStatement.SIGN_IN);
+        } else if (src == signUpBtn) {
+            setView(ViewStatement.SIGN_UP);
         } else if (src == btnLogin) {
             controller.onLogin();
         } else if (src == btnReg) {
@@ -227,9 +253,18 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     @Override
     public void setView(ViewStatement statement) {
         switch (statement) {
+            case SIGN_IN:
+                add(loginPanel);
+                add(btnLogin);
+                break;
+            case SIGN_UP:
+                add(registrationPanel);
+                add(btnReg);
+                break;
+
             case CONNECTED:
-                leftPanelConnect.add(tableScrollPane);
-                leftPanelConnect.add(new JScrollPane(log));
+                leftPanel.add(tableScrollPane);
+                leftPanel.add(new JScrollPane(log));
                 rightPanel.remove(tfIPAddress);
                 rightPanel.remove(tfPort);
                 rightPanel.remove(tfLogin);
@@ -246,8 +281,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 repaint();
                 break;
             case DISCONNECTED:
-                leftPanelConnect.remove(tableScrollPane);
-                leftPanelConnect.remove(new JScrollPane(log));
+                leftPanel.remove(tableScrollPane);
+                leftPanel.remove(new JScrollPane(log));
                 rightPanel.remove(btnDisconnect);
                 rightPanel.remove(btnUpload);
                 rightPanel.remove(btnDownload);
