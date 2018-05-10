@@ -29,18 +29,23 @@ public class RequestService {
             String password;
             String email;
             String user;
+            String userInfo;
+            int userID;
             switch (arr[0]) {
                 case Requests.AUTH_REQUEST:
                     login = arr[1];
                     password = arr[2];
-                    user = SqlClient.checkAuth(login, password);
+                    userInfo = SqlClient.checkAuth(login, password);
+                    String[] tempData = userInfo.split(Requests.DELIMITER);
+                    user = tempData[0];
+                    userID = Integer.parseInt(tempData[1]);
                     if (user == null) {
                         putLog("Некорректные login/password: login '" +
                                 login + "' password: '" + password + "'");
                         client.authorizeError();
                         return;
                     }
-                    client.authorizeAccept(user);
+                    client.authorizeAccept(user, userID);
                     client.sendFileList(getFilesList(client));
                     break;
                 case Requests.REG_REQUEST:
@@ -95,9 +100,15 @@ public class RequestService {
                 case Requests.DELETE_REQUEST:
                     File deleteFile = new File(client.getUserDir(), arr[1]);
                     deleteFile.delete();
+                    putLog("Пользователем " + client.getUser() + " удален файл " + arr[1]);
                     client.sendFileList(getFilesList(client));
                     break;
-
+                case Requests.RENAME_REQUEST:
+                    File renameFile = new File(client.getUserDir(), arr[1]);
+                    renameFile.renameTo(new File(client.getUserDir(), arr[2]));
+                    putLog("Пользователем " + client.getUser() + " изменено имя файла: " + arr[1] + " на: " + arr[2]);
+                    client.sendFileList(getFilesList(client));
+                    break;
                 case Requests.TYPE_REQUEST:
                     break;
                 default:

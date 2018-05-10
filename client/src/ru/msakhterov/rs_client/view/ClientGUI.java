@@ -6,9 +6,7 @@ import ru.msakhterov.rs_client.controller.ClientListener;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
@@ -26,7 +24,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     private static final String WINDOW_TITLE = "Storage Client";
     private final JPanel rightPanel = new JPanel(new GridLayout(8, 1));
-    private final Box leftPanel = new Box(BoxLayout.Y_AXIS);
+    private final Box leftPanelConnect = new Box(BoxLayout.Y_AXIS);
+    private final JPanel leftPanelDisconnect = new JPanel(new GridLayout(8, 1));
     private final DefaultTableModel tableModel = new DefaultTableModel();
 
     private final JTextArea log = new JTextArea();
@@ -44,11 +43,14 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     private final JButton btnUpload = new JButton("Upload");
     private final JButton btnDownload = new JButton("Download");
     private final JButton btnDelete = new JButton("Delete");
+    private final JButton btnRename = new JButton("Rename");
 
     private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+    private JScrollPane tableScrollPane;
     private ClientListener controller;
     private boolean isSelected = false;
     private int selectedRow;
+    private String defaultPath;
 
     public ClientGUI() {
         Thread.setDefaultUncaughtExceptionHandler(this);
@@ -72,6 +74,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         table.setModel(tableModel);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         setColumnsWidth();
+        RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);
+        table.setRowSorter(sorter);
         ListSelectionModel selModel = table.getSelectionModel();
         selModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
@@ -79,10 +83,9 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         log.setEditable(false);
         log.setLineWrap(true);
 
-        JScrollPane tableScrollPane = new JScrollPane(table);
-        leftPanel.add(tableScrollPane);
-        leftPanel.add(new JScrollPane(log));
-        add(leftPanel);
+        tableScrollPane = new JScrollPane(table);
+
+        add(leftPanelConnect);
 
         cbAlwaysOnTop.addActionListener(this);
         tfIPAddress.addActionListener(this);
@@ -96,6 +99,7 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
         btnUpload.addActionListener(this);
         btnDownload.addActionListener(this);
         btnDelete.addActionListener(this);
+        btnRename.addActionListener(this);
         selModel.addListSelectionListener(this);
 
         controller = new ClientController(this);
@@ -116,22 +120,34 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
             controller.onRegistration();
         } else if (src == btnDisconnect) {
             controller.onDisconnect();
+            clearTable();
         } else if (src == btnUpload) {
             controller.onUpload();
         } else if (src == btnDownload) {
-            if (isSelected)
-            controller.onDownload(getSelectedFileName());
+            if (isSelected) {
+                controller.onDownload(getSelectedFileName());
+            }
             else JOptionPane.showMessageDialog(this, "Выберите файл для загрузки", "Загрузка файла", JOptionPane.INFORMATION_MESSAGE);
         } else if (src == btnDelete) {
-            if (isSelected)
+            if (isSelected) {
                 controller.onDelete(getSelectedFileName());
-            else JOptionPane.showMessageDialog(this, "Выберите файл для удаления", "Удаление файла", JOptionPane.INFORMATION_MESSAGE);
+                isSelected = false;
+            } else
+                JOptionPane.showMessageDialog(this, "Выберите файл для удаления", "Удаление файла", JOptionPane.INFORMATION_MESSAGE);
+        } else if (src == btnRename) {
+            if (isSelected) {
+                String[] temp = {getSelectedFileName()};
+                String newFileName = JOptionPane.showInputDialog(this, "Введите новое имя файла", "Переименование файла", JOptionPane.INFORMATION_MESSAGE, null, null, temp[0]).toString();
+                controller.onRename(getSelectedFileName(), newFileName);
+                isSelected = false;
+            } else
+                JOptionPane.showMessageDialog(this, "Выберите файл для переименования", "Переименование файла", JOptionPane.INFORMATION_MESSAGE);
         } else {
             throw new RuntimeException("Unknown source: " + src);
         }
     }
 
-    public void uploadDraggedFile(String filePath){
+    void uploadDraggedFile(String filePath) {
         controller.onUpload(filePath);
     }
 
@@ -180,13 +196,14 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     @Override
     public File getFilePath(String fileName) {
-        JFileChooser fileChooser = new JFileChooser();
+        JFileChooser fileChooser = new JFileChooser(defaultPath);
         File selectedFilePath = null;
         if (fileName == null) {
             fileChooser.setDialogTitle("Выбор файла");
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 selectedFilePath = fileChooser.getSelectedFile();
+                defaultPath = selectedFilePath.getParent();
             }
         }
          else {
@@ -211,6 +228,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
     public void setView(ViewStatement statement) {
         switch (statement) {
             case CONNECTED:
+                leftPanelConnect.add(tableScrollPane);
+                leftPanelConnect.add(new JScrollPane(log));
                 rightPanel.remove(tfIPAddress);
                 rightPanel.remove(tfPort);
                 rightPanel.remove(tfLogin);
@@ -222,14 +241,18 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 rightPanel.add(btnUpload);
                 rightPanel.add(btnDownload);
                 rightPanel.add(btnDelete);
+                rightPanel.add(btnRename);
                 rightPanel.revalidate();
                 repaint();
                 break;
             case DISCONNECTED:
+                leftPanelConnect.remove(tableScrollPane);
+                leftPanelConnect.remove(new JScrollPane(log));
                 rightPanel.remove(btnDisconnect);
                 rightPanel.remove(btnUpload);
                 rightPanel.remove(btnDownload);
                 rightPanel.remove(btnDelete);
+                rightPanel.remove(btnRename);
                 rightPanel.add(tfIPAddress);
                 rightPanel.add(tfPort);
                 rightPanel.add(tfLogin);
@@ -253,10 +276,8 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
 
     @Override
     public void setFilesList(String[][] filesList) {
+        clearTable();
         if (filesList != null) {
-            while (tableModel.getRowCount() > 0) {
-                tableModel.removeRow(0);
-            }
             for (int j = 0; j < filesList.length; j++) {
                 Vector<String> row = new Vector<>();
                 for (int i = 0; i < filesList[j].length; i++) {
@@ -265,6 +286,11 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                 tableModel.insertRow(j, row);
             }
         }
+    }
+
+    @Override
+    public void setFilesList() {
+        clearTable();
     }
 
     @Override
@@ -295,6 +321,12 @@ public class ClientGUI extends JFrame implements Thread.UncaughtExceptionHandler
                     column.setPreferredWidth(120);
                     break;
             }
+        }
+    }
+
+    private void clearTable() {
+        while (tableModel.getRowCount() > 0) {
+            tableModel.removeRow(0);
         }
     }
 }

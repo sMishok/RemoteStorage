@@ -40,7 +40,7 @@ public class Server implements ServerSocketThreadListener, SocketThreadListener 
             SqlClient.connect();
             String userData = SqlClient.showAllUsers();
             if (!userData.equals(null)) putLog(userData);
-            else putLog("База данных не сожержит пользовательских данных");
+            else putLog("База данных не содержит пользовательских данных");
     }
 
 

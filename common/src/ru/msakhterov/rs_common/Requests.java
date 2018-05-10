@@ -15,6 +15,7 @@ public class Requests {
     public static final String DOWNLOAD_REQUEST = "/download_request";
     public static final String DOWNLOAD_ACCEPT = "/download_accept";
     public static final String DELETE_REQUEST = "/delete_request";
+    public static final String RENAME_REQUEST = "/rename_request";
     public static final String FILES_LIST_REQUEST = "/files_list_request";
     public static final String EMPTY_FILES_DIR_REQUEST = "/empty_files_dir_request";
     public static final String DOWNLOAD_DENIED = "/download_denied";
@@ -47,7 +48,7 @@ public class Requests {
         return REG_DENIED;
     }
 
-    //Загрузка на сервер
+    //Загрузка файла на сервер
     public static String getUploadRequest(String fileName) {
         return UPLOAD_REQUEST + DELIMITER + fileName;
     }
@@ -60,7 +61,7 @@ public class Requests {
         return UPLOAD_DENIED;
     }
 
-    //Загрузка с сервера
+    //Загрузка файла с сервера
     public static String getDownloadRequest(String fileName) {
         return DOWNLOAD_REQUEST + DELIMITER + fileName;
     }
@@ -76,6 +77,11 @@ public class Requests {
     //Удаление файла на сервере
     public static String getDeleteRequest(String fileName) {
         return DELETE_REQUEST + DELIMITER + fileName;
+    }
+
+    //Переименование файла на сервере
+    public static String getRenameRequest(String oldFileName, String newFileName) {
+        return RENAME_REQUEST + DELIMITER + oldFileName + DELIMITER + newFileName;
     }
 
     public static String getFilesListRequest() {

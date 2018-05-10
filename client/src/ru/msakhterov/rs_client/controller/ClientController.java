@@ -67,6 +67,11 @@ public class ClientController implements ClientListener, SocketThreadListener {
         socketThread.sendRequest(Requests.getDeleteRequest(fileName));
     }
 
+    @Override
+    public void onRename(String oldFileName, String newFileName) {
+        socketThread.sendRequest(Requests.getRenameRequest(oldFileName, newFileName));
+    }
+
     private void connect() {
         Socket socket = null;
         try {
@@ -96,6 +101,7 @@ public class ClientController implements ClientListener, SocketThreadListener {
                     break;
                 case Requests.EMPTY_FILES_DIR_REQUEST:
                     client.logAppend("Хранилище не содержит файлов");
+                    client.setFilesList();
                     break;
                 case Requests.REG_ACCEPT:
                     client.setViewTitle(arr[1]);

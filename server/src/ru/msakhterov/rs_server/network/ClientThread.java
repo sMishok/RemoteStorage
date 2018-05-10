@@ -13,6 +13,7 @@ import java.net.Socket;
 public class ClientThread extends SocketThread {
 
     private String user;
+    private int userID;
     private boolean isAuthorized;
 
     public ClientThread(SocketThreadListener listener, String name, Socket socket) {
@@ -23,17 +24,22 @@ public class ClientThread extends SocketThread {
         return user;
     }
 
+    public int getUserID() {
+        return userID;
+    }
+
     public File getUserDir() {
-        return new File("RemoteStorageFiles\\" + user);
+        return new File("RemoteStorageFiles\\" + userID);
     }
 
     public boolean isAuthorized() {
         return isAuthorized;
     }
 
-    public void authorizeAccept(String user) {
+    public void authorizeAccept(String user, int userID) {
         isAuthorized = true;
         this.user = user;
+        this.userID = userID;
         sendRequest(Requests.getAuthAccept(user));
     }
 

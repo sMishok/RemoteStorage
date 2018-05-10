@@ -1,5 +1,7 @@
 package ru.msakhterov.rs_server.db;
 
+import ru.msakhterov.rs_common.Requests;
+
 import java.io.File;
 import java.sql.*;
 
@@ -33,11 +35,16 @@ public class SqlClient {
 
     public synchronized static String checkAuth(String login, String password) {
         System.out.println("Авторизация пользователя: " + login);
-        String request = "SELECT login FROM Users WHERE login='" +
+        String request = "SELECT id, login FROM Users WHERE login='" +
                 login + "' AND password='" + password + "'";
         try (ResultSet set = statement.executeQuery(request)) {
             if (set.next()) {
-                return set.getString(1);
+                int userID = set.getInt(1);
+                File userDir = new File("RemoteStorageFiles\\" + userID);
+                if (!userDir.exists())
+                    userDir.mkdir();
+                return set.getString(2) + Requests.DELIMITER + userID;
+
             } else {
                 return null;
             }
@@ -61,7 +68,9 @@ public class SqlClient {
             request = "INSERT INTO Users (login, password, email) VALUES ('" + login + "', '" + password + "', '" + email + "')";
             try {
                 statement.executeUpdate(request);
-                File userDir = new File("RemoteStorageFiles\\"+login);
+                String requestID = "SELECT id FROM Users WHERE email='" + email + "'";
+                ResultSet set = statement.executeQuery(requestID);
+                File userDir = new File("RemoteStorageFiles\\" + set.getInt(1));
                 userDir.mkdir();
                 return login;
             } catch (SQLException e) {

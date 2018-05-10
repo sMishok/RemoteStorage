@@ -15,4 +15,6 @@ public interface ClientListener {
     void onDownload(String fileName);
 
     void onDelete(String fileName);
+
+    void onRename(String oldFileName, String newFileName);
 }
